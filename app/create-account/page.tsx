@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getDatabase, ref, set } from 'firebase/database';
-import '../lib/firebaseConfig'; 
 import ErrorModal from './ErrorModal';
 import Confetti from 'react-confetti';
 
