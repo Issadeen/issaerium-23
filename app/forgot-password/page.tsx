@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
-import '../lib/firebaseConfig'; 
 import ErrorModal from './ErrorModal';
 
 const PasswordResetPage: React.FC = () => {
