@@ -1,0 +1,28 @@
+.error-modal {
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fixed.inset-0.flex.items-center.justify-center.z-50 .error-modal {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.error-modal.breaking {
+  animation: glass-break 0.5s forwards;
+}
+
+@keyframes glass-break {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2) rotate(20deg);
+  }
+}
