@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowUp } from 'lucide-react';
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { auth } from '../firebaseConfig'; // Import initialized Firebase services
 import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
 
 export default function WorkDetailsPage() {
