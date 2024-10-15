@@ -7,9 +7,9 @@ import { Button } from "../components/ui/button";
 import Input from "../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
-import { getDatabase, ref, onValue, remove, get } from 'firebase/database';
+import { auth, database } from '../firebaseConfig'; // Import initialized Firebase services
+import { signOut, onAuthStateChanged, getAuth } from 'firebase/auth';
+import { ref, onValue, remove, get } from 'firebase/database';
 
 
 interface TruckDetail {
@@ -115,7 +115,7 @@ export default function TruckDetails() {
   }, [router]);
 
   useEffect(() => {
-    const db = getDatabase();
+    const db = database;
     const trucksRef = ref(db, 'trucks');
     onValue(trucksRef, (snapshot) => {
       const data = snapshot.val();
@@ -166,7 +166,7 @@ export default function TruckDetails() {
     const auth = getAuth();
     const user = auth.currentUser;
     if (user) {
-      const db = getDatabase();
+      const db = database;
       const userRef = ref(db, `users/${user.uid}`);
       const snapshot = await get(userRef);
       const userData = snapshot.val();
@@ -187,7 +187,7 @@ export default function TruckDetails() {
   const handleDelete = async (key: string) => {
     const workId = prompt("Please enter your work ID:");
     if (workId && await validateWorkId(workId)) {
-      const db = getDatabase();
+      const db = database;
       const truckRef = ref(db, `trucks/${key}`);
       remove(truckRef).then(() => {
         setTrucks(prevTrucks => prevTrucks.filter(truck => truck.key !== key));
