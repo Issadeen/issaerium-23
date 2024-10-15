@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 firebase.auth().onAuthStateChanged(function(user) {
     if (!user) {
         // User is not signed in, redirect to index.html
-        window.location.href = "index.html";
+        window.location.href = "/app/login/page";
     } else {
         console.log('User is signed in.');
 
