@@ -7,6 +7,7 @@ import { Button } from "../components/ui/button";
 import Input from "../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getDatabase, ref, onValue, remove, get } from 'firebase/database';
 
