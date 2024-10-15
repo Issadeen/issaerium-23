@@ -7,7 +7,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { auth } from '../firebaseConfig'; // Import initialized Firebase services
-import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 
 export default function WorkDetailsPage() {
     const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -16,7 +16,6 @@ export default function WorkDetailsPage() {
     const router = useRouter();
 
     useEffect(() => {
-        const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, user => {
             if (user) {
                 setProfilePic(user.photoURL);
@@ -33,7 +32,6 @@ export default function WorkDetailsPage() {
                 clearTimeout(inactivityTimeoutRef.current);
             }
             inactivityTimeoutRef.current = setTimeout(() => {
-                const auth = getAuth();
                 signOut(auth).then(() => {
                     router.push('/login');
                 });
@@ -55,7 +53,6 @@ export default function WorkDetailsPage() {
     }, [router]);
 
     const handleLogout = async () => {
-        const auth = getAuth();
         await signOut(auth);
         router.push('/login');
     };
