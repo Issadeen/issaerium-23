@@ -8,8 +8,8 @@ import Input from "../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { auth, database } from '../firebaseConfig'; // Import initialized Firebase services
-import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
-import { getDatabase, ref, push } from 'firebase/database';
+import { signOut, onAuthStateChanged, getAuth } from 'firebase/auth';
+import { ref, push } from 'firebase/database';
 
 
 export default function NewTruck() {
@@ -96,7 +96,7 @@ export default function NewTruck() {
     }
 
     setLoading(true);
-    const db = getDatabase();
+    const db = database;
     const trucksRef = ref(db, 'trucks');
     const dataToSave: any = {
       truck_no: truck.id,
