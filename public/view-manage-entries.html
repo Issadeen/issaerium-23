@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truck Entry System</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/d00c9b568a.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="config.js"></script> 
+  <script src="auth.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
+</head>
+<style>
+    :root {
+        --light-background: #111827;
+        --light-text: #333;
+        --light-primary: #007bff;
+        --light-secondary: #6c757d;
+
+        --dark-background: #111827;
+        --dark-text: #f8f9fa;
+        --dark-primary: #0fa;
+        --dark-secondary: #6c757d;
+    }
+
+    body.dark-theme {
+        background-color: var(--dark-background);
+        color: var(--dark-text);
+    }
+
+    body.dark-theme .top-bar,
+    body.dark-theme form,
+    body.dark-theme .filter-container {
+        background-color: var(--dark-background);
+        color: var(--dark-text);
+    }
+
+    body.dark-theme input {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-color: var(--dark-background);
+        color: var(--dark-text);
+    }
+
+    body.dark-theme input.theme-input {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-color: var(--dark-background);
+        color: var(--dark-text);
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+    }
+
+    .ago.uganda {
+        background-color: #b30000; /* Dark Red */
+        color: #ffffff; /* White */
+    }
+
+    .ago.drc {
+        background-color: #006600; /* Dark Green */
+        color: #ffffff; /* White */
+    }
+
+    .ago.ssd {
+        background-color: #0000b3; /* Dark Blue */
+        color: #ffffff; /* White */
+    }
+
+    .pms.uganda {
+        background-color: #b3b300; /* Dark Yellow */
+        color: #000000; /* Black */
+    }
+
+    .pms.drc {
+        background-color: #b300b3; /* Dark Magenta */
+        color: #ffffff; /* White */
+    }
+
+    .pms.ssd {
+        background-color: #00b3b3; /* Dark Cyan */
+        color: #000000; /* Black */
+    }
+
+    .filter-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px; /* Add this line */
+    }
+
+    .filter-container input[type="text"] {
+        width: 30%;
+        box-sizing: border-box;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+        background-color: white;
+        padding: 12px 20px;
+        -webkit-transition: width 0.4s ease-in-out;
+        transition: width 0.4s ease-in-out;
+    }
+
+    .filter-container input[type="text"]:focus {
+        width: 100%;
+    }
+
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f8f9fa;
+        padding: 10px 20px;
+        box-shadow: 0 2px 4px 0 rgba(0,0,0,0.1);
+    }
+
+    .top-bar h1 {
+        margin: 0;
+    }
+
+    .top-bar button {
+        margin-left: auto;
+    }
+
+    .filter-container {
+        display: none;
+    }
+
+    .theme-input {
+        margin: 0 10px 0 0; /* This adds a 10px space to the right of each input box */
+    }
+
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content/Box */
+    .modal-content {
+        background-color: #180101;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+        color: #f9f2f2; /* Set text color to black */
+    }
+
+    /* The Close Button */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    body.dark-theme .modal {
+        background-color: rgba(255,255,255,0.4); /* White w/ opacity */
+    }
+
+    body.dark-theme .modal-content {
+        background-color: var(--dark-background);
+        color: var(--dark-text);
+        border: 1px solid var(--dark-secondary);
+    }
+
+    body.dark-theme .close {
+        color: var(--dark-secondary);
+    }
+
+    body.dark-theme .close:hover,
+    body.dark-theme .close:focus {
+        color: var(--dark-primary);
+    }
+
+    /* Media query for Android screens (adjust breakpoint as needed) */
+    @media (max-width: 768px) { 
+        /* ... (Your existing card styles for #resultTable) ... */
+
+        /* Card styling for the summary table rows */
+        #resultTable tr { 
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px 0 rgba(0,0,0,0.1);
+        }
+
+        #resultTable td {
+            padding: 0.5rem 0; 
+            border: none; 
+        }
+
+        /* Headers for the summary cards */
+        #resultTable tr td:nth-child(1):before { content: "Product - Destination: "; font-weight: bold; }
+        #resultTable tr td:nth-child(2):before { content: "Remaining Quantity: "; font-weight: bold; }
+        #resultTable tr td:nth-child(3):before { content: "Estimated Trucks: "; font-weight: bold; }
+        #resultTable tr td:nth-child(4):before { content: "Mother Entries: "; font-weight: bold; }
+
+        /* Hide the table header row on Android screens */
+        #resultTable tr:first-child {
+            display: none; 
+        }
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .btn i {
+        font-size: 1.5em;
+    }
+
+    .btn .btn-text {
+        margin-left: 10px;
+        display: inline-block;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+    }
+
+    /* Tooltip styling */
+    .btn::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.75);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        font-size: 0.9em;
+    }
+
+    .btn:hover::after {
+        opacity: 1;
+    }
+
+    /* Media query for Android screens (adjust breakpoint as needed) */
+    @media (max-width: 768px) {
+        .btn .btn-text {
+            display: none;
+        }
+
+        .btn {
+            padding: 10px;
+        }
+    }
+
+    /* Responsive typography for the heading */
+    h1 {
+        font-size: 3rem; /* Default font size for large screens */
+    }
+
+    @media (max-width: 1024px) {
+        h1 {
+            font-size: 2.5rem; /* Adjust font size for medium screens */
+        }
+    }
+
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2rem; /* Adjust font size for small screens */
+        }
+    }
+
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 1.5rem; /* Adjust font size for very small screens */
+        }
+    }
+
+    .highlight {
+        background-color: rgb(5, 128, 244);
+    }
+</style>
+
+<body class="bg-gray-100">
+  <div class="container mx-auto p-4">
+    <div class="top-bar">
+      <h1 class="text-3xl font-bold">Entry System</h1>
+      <button onclick="window.location.href='/add-entries'" class="btn bg-blue-500 text-white neumorphic" data-tooltip="Add TR800 Entry">
+        <i class="fas fa-plus"></i><span class="btn-text">Add TR800 Entry</span>
+        </button>
+      <button onclick="window.location.href='/dashboard'" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        <i class="fas fa-home"></i>
+      </button>
+      <button id="themeSwitcher">Switch Theme</button>
+    </div>
+
+    <form id="truckForm" class="bg-white p-4 rounded shadow mt-4">
+      <input type="text" id="truckNumber" placeholder="Truck Number" class="w-full mb-2 p-2 border rounded">
+      <input type="text" id="destination" placeholder="Destination" class="w-full mb-2 p-2 border rounded" oninput="this.value = this.value.toLowerCase()">
+      <input type="text" id="product" placeholder="Product" class="w-full mb-2 p-2 border rounded" oninput="this.value = this.value.toLowerCase()">
+      <input type="number" id="at20Quantity" placeholder="AT20 Quantity" class="w-full mb-2 p-2 border rounded">
+      <div id="message" class="mt-2 mb-2"></div>
+      <div class="button-container">
+        <button id="getEntriesButton" type="button" onclick="getEntries()" class="btn bg-blue-500 text-white">
+            <i class="fas fa-list"></i><span class="btn-text">Get Entries</span>
+        </button>
+        <button type="button" onclick="getAllEntries()" class="btn bg-green-500 text-white">
+            <i class="fas fa-clipboard-list"></i><span class="btn-text">Get Entry Usage</span>
+        </button>
+        <button type="button" onclick="window.location.href='manual.html'" class="btn bg-green-500 text-white">
+            <i class="fas fa-book"></i><span class="btn-text">Manual Allocation</span>
+        </button>
+        <button type="button" id="summaryButton" class="btn bg-yellow-500 text-white">
+            <i class="fas fa-chart-bar"></i><span class="btn-text">Quantity Summary</span>
+        </button>
+        <button type="button" id="downloadPdfButton" class="btn bg-red-500 text-white">
+            <i class="fas fa-file-pdf"></i><span class="btn-text">Download PDF</span>
+        </button>
+        <button id="exportCSVButton">Export to CSV</button>
+
+    </div>
+
+    </form>
+
+    <button id="undoButton" class="btn bg-red-500 text-white neumorphic" style="display: none;" data-tooltip="Undo Changes">
+        <i class="fas fa-undo"></i><span class="btn-text">Undo Changes</span>
+    </button>
+
+    <div class="filter-container">
+      <input type="text" id="entryFilter2" class="theme-input" onkeyup="filterTable('entryFilter2', 0)" placeholder="Filter by Entry">
+      <input type="text" id="productFilter2" class="theme-input" onkeyup="filterTable('productFilter2', 3)" placeholder="Filter by Product">
+      <input type="text" id="destinationFilter2" class="theme-input" onkeyup="filterTable('destinationFilter2', 4)" placeholder="Filter by Destination">
+      <input type="text" id="truckFilter2" class="theme-input" onkeyup="filterTable('truckFilter2', 5)" placeholder="Filter by Truck Number">
+    </div>
+
+    <div id="result" class="mt-4"></div>
+
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close">×</span>
+        <p>Your session will end soon due to inactivity.</p>
+      </div>
+    </div>
+  </div>
+
+  
+<script>
+    // intialize firebase...
+
+    // Get a reference to the database service
+    var database = firebase.database();
+
+    // Define originalData in the global scope
+    var originalData = {};
+
+    // Add an event listener to the undo button
+    document.getElementById('undoButton').addEventListener('click', function(event) {
+        event.preventDefault();
+        undoChanges();
+    });
+
+    // Theme switcher
+    document.getElementById('themeSwitcher').addEventListener('click', function() {
+        document.body.classList.toggle('dark-theme');
+        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    });
+
+    // Apply saved theme on page load
+    window.addEventListener('load', function() {
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+    });
+
+// Get the product and AT20 quantity input fields and the message div
+let productInput = document.getElementById('product');
+let at20QuantityInput = document.getElementById('at20Quantity');
+let messageDiv = document.getElementById('message');
+
+// Add an event listener to the AT20 quantity input field
+at20QuantityInput.addEventListener('input', function() {
+    // Clear any previous message
+    messageDiv.innerHTML = '';
+
+    // Get the product and AT20 quantity
+    let product = productInput.value;
+    let at20Quantity = at20QuantityInput.value;
+
+    // Check the product and AT20 quantity
+    if (product === 'ago' && at20Quantity > 36000) {
+        // Display a message for AGO
+        messageDiv.innerHTML = 'Please note: AGO is usually less than 36,000.';
+    } else if (product === 'pms' && at20Quantity < 36000) {
+        // Display a message for PMS
+        messageDiv.innerHTML = 'Please note: PMS is usually more than 36,000.';
+    }
+});
+
+// For Allocating the entries...
+function getEntries() {
+    const getEntriesButton = document.getElementById('getEntriesButton');
+    getEntriesButton.disabled = true;
+    getEntriesButton.textContent = 'Getting entries...';
+
+    // Show the "Undo Changes" button
+    document.getElementById('undoButton').style.display = 'block';
+
+    const truckNumberInput = document.getElementById('truckNumber');
+    const destinationInput = document.getElementById('destination');
+    const productInput = document.getElementById('product');
+    const at20QuantityInput = document.getElementById('at20Quantity');
+
+    const truckNumber = truckNumberInput.value;
+    const destination = destinationInput.value.toLowerCase(); // Convert to lower case
+    const product = productInput.value;
+    const at20Quantity = parseFloat(at20QuantityInput.value);
+
+    // Check if all fields are filled
+    if (!truckNumber || !destination || !product || isNaN(at20Quantity)) {
+        alert('Please fill all fields.');
+        getEntriesButton.disabled = false;
+        getEntriesButton.textContent = 'Get Entries';
+        return;
+    }
+
+    // Clear the resultDiv
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '';
+
+    // Fetch TR800 entries from Realtime Database
+    database.ref('tr800')
+        .orderByChild('product_destination')
+        .equalTo(product + '_' + destination)
+        .once('value')
+        .then(function(snapshot) {
+            if (snapshot.exists()) {
+                let remaining = at20Quantity;
+                let totalRemainingQuantity = 0; // Add this line
+
+                // Create a new table
+                let resultTable = document.createElement('table');
+                resultTable.style.borderCollapse = 'collapse';
+                resultTable.innerHTML = '<tr><th>Mother Entry</th><th>Initial Quantity</th><th>Remaining Quantity</th><th>Truck Number</th><th>Destination</th><th>Given Quantity</th><th>Destination</th></tr>';
+
+                let updates = [];
+
+                // Convert the snapshot to an array and sort it by timestamp
+                let entries = [];
+                snapshot.forEach(function(childSnapshot) {
+                    entries.push({ ref: childSnapshot.ref, data: childSnapshot.val() });
+                });
+                entries.sort((a, b) => a.data.timestamp - b.data.timestamp);
+
+                // Iterate over the sorted entries
+                entries.some(function(entry) { // Change forEach to some
+                    let data = entry.data;
+
+                    // Check if data.remainingQuantity is a number
+                    if (typeof data.remainingQuantity !== 'number') {
+                        console.error(`Invalid remaining quantity for entry ${data.number}: ${data.remainingQuantity}`);
+                        return;
+                    }
+
+                    totalRemainingQuantity += data.remainingQuantity; // Add this line
+
+                    // Check if there is enough quantity and the destination matches
+                    if (data.destination.trim().toLowerCase() === destination.trim().toLowerCase() && data.remainingQuantity > 0 && data.status !== 'cleared') {
+                        let subtract = Math.min(data.remainingQuantity, remaining);
+
+                        // Store the original data before updating it
+                        originalData[entry.ref.key] = { ...data, truckNumber: truckNumber }; // Store truckNumber
+
+                        data.remainingQuantity -= subtract;
+                        remaining -= subtract;
+
+                        // If the remaining quantity is zero, mark the entry as cleared
+                        if (data.remainingQuantity === 0) {
+                            data.status = 'cleared';
+                        }
+
+                        // Add a new row to the table
+                        resultTable.innerHTML += `<tr><td>${data.number}</td><td>${data.initialQuantity}</td><td>${data.remainingQuantity}</td><td>${truckNumber}</td><td>${data.destination}</td><td>${subtract}</td><td>${destination}</td></tr>`;
+
+                        // Update Realtime Database and save the Promise
+                        updates.push(entry.ref.update(data));
+
+                        // Replace any "/" characters with "-" in the truck number
+                        let sanitizedTruckNumber = truckNumber.replace(/\//g, '-');
+
+                        // Save the truck number and subtracted quantity
+                        updates.push(database.ref('truckEntries/' + sanitizedTruckNumber).push({
+                            entryNumber: data.number,
+                            subtractedQuantity: subtract
+                        }));
+
+                        // If remaining is zero, stop the iteration
+                        if (remaining === 0) {
+                            return true; // Stop the iteration
+                        }
+                    }
+                });
+
+                // Wait for all updates to complete
+                Promise.all(updates).then(() => {
+                    // Clear the updates array
+                    updates = [];
+                    // Check if all the quantity was allocated
+                    if (remaining > 0) {
+                        // Ask the user if they want to use the remaining entries
+                        let amountLacking = at20Quantity - totalRemainingQuantity;
+                        if (confirm(`There is only ${totalRemainingQuantity} m3 left, which is ${amountLacking} less than required for AT20. Do you want to proceed with these entries?`)) {
+                            // If the user clicked "OK", use the remaining entries
+                            let remainingEntries = entries.filter(entry => entry.data.remainingQuantity > 0 && entry.data.status !== 'cleared');
+
+                            remainingEntries.forEach(function(entry) {
+                                let data = entry.data;
+                                let subtract = Math.min(data.remainingQuantity, remaining);
+
+                                data.remainingQuantity -= subtract;
+                                remaining -= subtract;
+
+                                // If the remaining quantity is zero, mark the entry as cleared
+                                if (data.remainingQuantity === 0) {
+                                    data.status = 'cleared';
+                                }
+
+                                // Add a new row to the table
+                                resultTable.innerHTML += `<tr><td>${data.number}</td><td>${data.initialQuantity}</td><td>${data.remainingQuantity}</td><td>${truckNumber}</td><td>${data.destination}</td><td>${subtract}</td><td>${destination}</td></tr>`;
+
+                                // Update Realtime Database and save the Promise
+                                updates.push(entry.ref.update(data));
+
+                                // Replace any "/" characters with "-" in the truck number
+                                let sanitizedTruckNumber = truckNumber.replace(/\//g, '-');
+
+                                // Save the truck number and subtracted quantity
+                                updates.push(database.ref('truckEntries/' + sanitizedTruckNumber).push({
+                                    entryNumber: data.number,
+                                    subtractedQuantity: subtract
+                                }));
+                            });
+
+                            // Wait for all updates to complete
+                            Promise.all(updates).then(() => {
+                                // Clear the updates array
+                                updates = [];
+                                // Display the table
+                                const resultDiv = document.getElementById('result');
+                                resultDiv.innerHTML = '';
+                                resultDiv.appendChild(resultTable);
+                            });
+                        } else {
+                             // If the user clicked "Cancel", do not use the remaining entries
+                            // Clear the form
+                                  truckNumberInput.value = '';
+                                  destinationInput.value = '';
+                                  productInput.value = '';
+                                  at20QuantityInput.value = '';
+
+                              // Undo the changes
+                                undoChangesWithoutPrompt();
+
+                            // Display the message
+                            resultDiv.innerHTML = `<tr><td colspan="7">Not enough entries available. Total remaining quantity: ${totalRemainingQuantity}</td></tr>`;
+                            }
+                    } else {
+                        //  code to update the database and the table...
+
+                        // Display the table
+                        const resultDiv = document.getElementById('result');
+                        resultDiv.innerHTML = '';
+                        resultDiv.appendChild(resultTable);
+                    }
+                    // After all updates are complete
+                    Promise.all(updates).then(() => {
+                        // Enable the button
+                        getEntriesButton.disabled = false;
+                        getEntriesButton.textContent = 'Get Entries';
+                    }).catch(error => {
+                        // Handle any errors
+                        console.error(error);
+                    });
+                    // Clear the form
+                    truckNumberInput.value = '';
+                    destinationInput.value = '';
+                    productInput.value = '';
+                    at20QuantityInput.value = '';
+                }).then(() => {
+                    // Update the UI to indicate that the entries have been fetched
+                    document.getElementById('getEntriesButton').textContent = 'Get entries';
+                }).catch(error => {
+                    // Handle any errors
+                    console.error(error);
+                });
+            } else {
+                // Display a message to the user indicating that the entry does not exist
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = 'No entries found for the given product and destination.';
+                
+                // Reset the button text and enable the button
+                getEntriesButton.textContent = 'Get Entries';
+                getEntriesButton.disabled = false;
+            }
+        })
+        .catch(error => {
+            // Handle any errors
+            console.error(error);
+        });
+}
+    // for the pdf..
+    let downloadPdfButton = document.getElementById('downloadPdfButton');
+
+    // Remove any existing event listeners
+    let newDownloadPdfButton = downloadPdfButton.cloneNode(true);
+    downloadPdfButton.parentNode.replaceChild(newDownloadPdfButton, downloadPdfButton);
+    downloadPdfButton = newDownloadPdfButton;
+
+    document.getElementById('downloadPdfButton').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent form submission
+
+    // Fetch all TR800 entries and truck entries from Realtime Database
+    Promise.all([
+        database.ref('tr800').once('value'),
+        database.ref('truckEntries').once('value') // Fetch the truck entries data
+    ]).then(function([tr800Snapshot, truckEntriesSnapshot]) {
+        let allEntriesData = [];
+
+        // Process TR800 entries for all entries table
+        if (tr800Snapshot.exists() && truckEntriesSnapshot.exists()) {
+            // Convert TR800 snapshot to array
+            let entries = [];
+            tr800Snapshot.forEach(function(childSnapshot) {
+                entries.push(childSnapshot.val());
+            });
+
+            // Convert the truckEntriesSnapshot to a map of entry numbers to trucks and quantities
+            let truckEntries = {};
+            truckEntriesSnapshot.forEach(function(truckSnapshot) {
+                truckSnapshot.forEach(function(entrySnapshot) {
+                    let data = entrySnapshot.val();
+                    if (!truckEntries[data.entryNumber]) {
+                        truckEntries[data.entryNumber] = [];
+                    }
+                    truckEntries[data.entryNumber].push({ truckNumber: truckSnapshot.key, subtractedQuantity: data.subtractedQuantity });
+                });
+            });
+
+            // Push headers
+            allEntriesData.push(['Mother Entry', 'Initial Quantity', 'Remaining Quantity', 'Product', 'Destination', 'Utilized Trucks and Quantities']);
+
+            // Push rows
+            entries.forEach(function(entry) {
+                let utilizedTrucksAndQuantities = truckEntries[entry.number] || [];
+                let row = [
+                    entry.number,
+                    entry.initialQuantity,
+                    entry.remainingQuantity,
+                    entry.product,
+                    entry.destination,
+                    utilizedTrucksAndQuantities.map((t, i) => `${i + 1}. ${t.truckNumber}: ${t.subtractedQuantity}`).join('\n')
+                ];
+                allEntriesData.push(row);
+            });
+        }
+
+        // Continue with existing code...
+
+        // Process TR800 entries for summary table
+        if (tr800Snapshot.exists()) {
+            // Create a map to store the total remaining quantity for each product and destination
+            let summary = {};
+
+            // Iterate over the entries
+            tr800Snapshot.forEach(function(childSnapshot) {
+                let data = childSnapshot.val();
+
+                // Check if data.remainingQuantity is a number
+                if (typeof data.remainingQuantity !== 'number') {
+                    console.error(`Invalid remaining quantity for entry ${data.number}: ${data.remainingQuantity}`);
+                    return;
+                }
+
+                // Add the remaining quantity to the total for the product and destination
+                let key = `${data.product} - ${data.destination}`;
+                if (!summary[key]) {
+                    summary[key] = {remainingQuantity: 0, estimatedTrucks: 0, motherEntries: []};
+                }
+                summary[key].remainingQuantity += data.remainingQuantity;
+                summary[key].estimatedTrucks = data.product.toLowerCase() === 'ago' ? summary[key].remainingQuantity / 36000 : summary[key].remainingQuantity / 40000;
+                // Add the mother entry only if the remaining quantity is greater than zero
+                if (data.remainingQuantity > 0) {
+                    summary[key].motherEntries.push({number: data.number, remainingQuantity: data.remainingQuantity});
+                }
+            });
+
+            // Process the summary data for the PDF
+            let summaryData = [['Product - Destination', 'Remaining Quantity', 'Estimated Trucks', 'Mother Entries']];
+            for (let key in summary) {
+                summaryData.push([key, summary[key].remainingQuantity, summary[key].estimatedTrucks, summary[key].motherEntries.map(entry => `${entry.number} (${entry.remainingQuantity})`).join(', ')]);
+            }
+
+            // Create a PDF
+            let docDefinition = {
+                content: [
+                    {
+                        text: 'All Entries',
+                        style: 'header'
+                    },
+                    {
+                        table: {
+                            headerRows: 1,
+                            body: allEntriesData
+                        },
+                        layout: 'lightHorizontalLines' // optional layout for table
+                    },
+                    {
+                        text: 'Summary',
+                        style: 'header'
+                    },
+                    {
+                        table: {
+                            headerRows: 1,
+                            body: summaryData
+                        },
+                        layout: 'lightHorizontalLines' // optional layout for table
+                    }
+                ],
+                styles: {
+                    header: {
+                        fontSize: 18,
+                        bold: true,
+                        margin: [0, 20, 0, 10],
+                        color: 'navy',
+                        italics: true
+
+                    },
+                    tableHeader: {
+                        bold: true,
+                        fontSize: 13,
+                        color: 'black',
+                        italics: true
+                    }
+                },
+                defaultStyle: {
+                    // alignment: 'justify'
+                },
+                pageSize: 'A4',
+                pageOrientation: 'landscape'
+            };
+
+            // Apply tableHeader style to all table headers
+            docDefinition.content.forEach(function(item) {
+                if (item.table) {
+                    item.table.body[0].forEach(function(cell) {
+                        cell.style = 'tableHeader';
+                    });
+                }
+            });
+            docDefinition.watermark = { text: 'Issaerium-23', color: 'lightgray', opacity: 0.3, bold: true, italics: false };
+
+            pdfMake.createPdf(docDefinition).download('result.pdf');
+        } else {
+            // Display a message when there are no entries
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'No entries available.';
+        }
+    });
+});
+
+function getAllEntries() {
+    // Fetch all TR800 entries and truck entries from Realtime Database
+    Promise.all([
+        database.ref('tr800').once('value'),
+        database.ref('truckEntries').once('value')
+    ]).then(function([tr800Snapshot, truckEntriesSnapshot]) {
+        if (tr800Snapshot.exists()) {
+            // Create a new table
+            let resultTable = document.createElement('table');
+            resultTable.id = 'resultTable'; // Add this line
+            resultTable.style.borderCollapse = 'collapse';
+            resultTable.innerHTML = '<tr><th>Mother Entry</th><th>Initial Quantity</th><th>Remaining Quantity</th><th>Product</th><th>Destination</th><th>Utilized Trucks and Quantities</th></tr>';
+
+            // Convert the tr800Snapshot to an array and sort it by timestamp
+            let entries = [];
+            tr800Snapshot.forEach(function(childSnapshot) {
+                entries.push({ ref: childSnapshot.ref, data: childSnapshot.val() });
+            });
+            entries.sort((a, b) => a.data.timestamp - b.data.timestamp);
+
+            // Convert the truckEntriesSnapshot to a map of entry numbers to trucks and quantities
+            let truckEntries = {};
+            truckEntriesSnapshot.forEach(function(truckSnapshot) {
+                truckSnapshot.forEach(function(entrySnapshot) {
+                    let data = entrySnapshot.val();
+                    if (!truckEntries[data.entryNumber]) {
+                        truckEntries[data.entryNumber] = [];
+                    }
+                    truckEntries[data.entryNumber].push({ truckNumber: truckSnapshot.key, subtractedQuantity: data.subtractedQuantity });
+                });
+            });
+
+            // Show filter container
+            document.querySelector('.filter-container').style.display = 'flex';
+
+            // Hide the filter container on button click
+            document.getElementById('getEntriesButton').addEventListener('click', function() {
+                document.querySelector('.filter-container').style.display = 'none';
+            });
+
+            // Iterate over the sorted entries
+            entries.forEach(function(entry) {
+                let data = entry.data;
+
+                // Get the utilized trucks and quantities for this entry
+                let utilizedTrucksAndQuantities = truckEntries[data.number] || [];
+
+                // Format utilized trucks and quantities using list numbering
+                let utilizedTrucksAndQuantitiesStr = utilizedTrucksAndQuantities.map((t, i) => `(${i+1}) ${t.truckNumber}: ${t.subtractedQuantity}`).join('<br>');
+
+                // Add a new row to the table
+                let row = document.createElement('tr');
+                row.className = `${data.product.replace(/\s+/g, '').toLowerCase()} ${data.destination.replace(/\s+/g, '').toLowerCase()}`; // Add class based on product and destination
+                row.innerHTML = `<td>${data.number}</td><td>${data.initialQuantity}</td><td>${data.remainingQuantity}</td><td>${data.product}</td><td>${data.destination}</td><td>${utilizedTrucksAndQuantitiesStr}</td>`;
+                resultTable.appendChild(row);
+            });
+
+            // Display the table
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+            resultDiv.appendChild(resultTable);
+        } else {
+            // Display a message to the user indicating that the entry does not exist
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'No entries found for the given product and destination.';
+
+            // Reset the button text and enable the button
+            getEntriesButton.textContent = 'Get Entries';
+            getEntriesButton.disabled = false;
+        }
+    }).catch(error => {
+        // Handle any errors
+        console.error(error);
+    });
+}
+
+
+// undo without prompt
+function undoChangesWithoutPrompt() {
+    console.log('undoChangesWithoutPrompt called');
+    console.log('originalData:', originalData);
+
+    // Iterate over the original data and restore it in the database
+    for (let key in originalData) {
+        console.log('Restoring data for key:', key);
+        let data = originalData[key];
+
+        // Delete the truck entry from the database
+        let sanitizedTruckNumber = data.truckNumber.replace(/\//g, '-');
+        database.ref('truckEntries/' + sanitizedTruckNumber).remove();
+
+        // Remove truckNumber from data before restoring it
+        delete data.truckNumber;
+        database.ref('tr800/' + key).set(data);
+    }
+
+    // Clear the original data
+    originalData = {};
+
+    // Remove the table and display a success message
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = 'Changes undone successfully';
+}
+
+// Define undoChanges function
+function undoChanges() {
+    const workId = prompt('Please enter your work ID:');
+    if (workId) {
+        firebase.database().ref('users').once('value', function(snapshot) {
+            let workIdExists = false;
+            snapshot.forEach(function(userSnapshot) {
+                if (userSnapshot.val().workId === workId) {
+                    workIdExists = true;
+                    // Return true to stop looping
+                    return true;
+                }
+            });
+            if (workIdExists) {
+                console.log('undoChanges called');
+                console.log('originalData:', originalData);
+
+                // Iterate over the original data and restore it in the database
+                for (let key in originalData) {
+                    console.log('Restoring data for key:', key);
+                    let data = originalData[key];
+
+                    // Delete the truck entry from the database
+                    let sanitizedTruckNumber = data.truckNumber.replace(/\//g, '-');
+                    database.ref('truckEntries/' + sanitizedTruckNumber).remove();
+
+                    // Remove truckNumber from data before restoring it
+                    delete data.truckNumber;
+                    database.ref('tr800/' + key).set(data);
+                }
+
+                // Clear the original data
+                originalData = {};
+
+                // Remove the table and display a success message
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = 'Changes undone successfully';
+            } else {
+                alert('Invalid work ID: ' + workId);
+            }
+        });
+    }
+}
+function filterTable(inputId, columnIndex) {
+    // Declare variables
+    let input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById(inputId);
+    filter = input.value.toUpperCase();
+    table = document.getElementById("resultTable");
+    tr = table.getElementsByTagName("tr");
+
+    // Loop through all table rows, and hide those that don't match the search query
+    for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[columnIndex];
+        if (td) {
+            // Use a data attribute to store the original content if it doesn't already exist
+            if (!td.dataset.originalContent) {
+                td.dataset.originalContent = td.textContent || td.innerText;
+            }
+            txtValue = td.dataset.originalContent;
+
+            if (filter === '') {
+                // If the filter is empty, display all rows and reset the cell content
+                tr[i].style.display = "";
+                td.innerHTML = txtValue;
+            } else if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+                // Create a new HTML string for the cell that wraps the matched truck number in a span with the 'highlight' class
+                let html = txtValue.replace(new RegExp(filter, 'gi'), match => `<span class="highlight">${match}</span>`);
+                td.innerHTML = html;
+            } else {
+                tr[i].style.display = "none";
+                // Reset the cell content to the original
+                td.innerHTML = txtValue;
+            }
+        }
+    }
+}
+
+
+
+//to get the summary of the remaining quantity.
+document.getElementById('summaryButton').addEventListener('click', function() {
+    // Fetch TR800 entries from Realtime Database
+    database.ref('tr800').once('value', function(snapshot) {
+        if (snapshot.exists()) {
+            // Create a map to store the total remaining quantity and mother entries for each product and destination
+            let summary = {};
+
+            // Iterate over the entries
+            snapshot.forEach(function(childSnapshot) {
+                let data = childSnapshot.val();
+
+                // Check if data.remainingQuantity is a number
+                if (typeof data.remainingQuantity !== 'number') {
+                    console.error(`Invalid remaining quantity for entry ${data.number}: ${data.remainingQuantity}`);
+                    return;
+                }
+
+                // Add the remaining quantity and mother entry to the total for the product and destination
+                let key = `${data.product} - ${data.destination}`;
+                if (!summary[key]) {
+                    summary[key] = {remainingQuantity: 0, estimatedTrucks: 0, motherEntries: []};
+                }
+                summary[key].remainingQuantity += data.remainingQuantity;
+                summary[key].estimatedTrucks = data.product.toLowerCase() === 'ago' ? summary[key].remainingQuantity / 36000 : summary[key].remainingQuantity / 40000;
+                // Add the mother entry and its remaining quantity only if the remaining quantity is greater than zero
+                if (data.remainingQuantity > 0) {
+                    summary[key].motherEntries.push({number: data.number, remainingQuantity: data.remainingQuantity});
+                }
+            });
+
+            // Display the summary
+            let summaryTable = document.createElement('table');
+            summaryTable.id = 'summaryTable'; // Give the summary table a unique ID
+            summaryTable.innerHTML = '<tr><th>Product - Destination</th><th>Remaining Quantity</th><th>Estimated Truck No</th><th>Mother Entries</th></tr>';
+
+            for (let key in summary) {
+                summaryTable.innerHTML += `<tr><td>${key}</td><td>${summary[key].remainingQuantity.toFixed(2)}</td><td>${summary[key].estimatedTrucks.toFixed(2)}</td><td>${summary[key].motherEntries.map(entry => `${entry.number} (${entry.remainingQuantity})`).join(', ')}</td></tr>`;
+            }
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = ''; // Clear previous results
+            resultDiv.appendChild(summaryTable);
+        } else {
+            // Display a message when there are no entries
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'No entries available.';
+        }
+    });
+});
+
+// Export to CSV
+document.getElementById('exportCSVButton').addEventListener('click', function() {
+    exportTableToCSV('entries.csv');
+});
+
+function exportTableToCSV(filename) {
+    let csv = [];
+    let rows = document.querySelectorAll('#resultTable tr');
+    
+    for (let i = 0; i < rows.length; i++) {
+        let row = [], cols = rows[i].querySelectorAll('td, th');
+        
+        for (let j = 0; j < cols.length; j++) {
+            row.push(cols[j].innerText);
+        }
+        
+        csv.push(row.join(','));
+    }
+
+    // Download CSV
+    downloadCSV(csv.join('\n'), filename);
+}
+
+function downloadCSV(csv, filename) {
+    let csvFile;
+    let downloadLink;
+
+    // CSV file
+    csvFile = new Blob([csv], { type: 'text/csv' });
+
+    // Download link
+    downloadLink = document.createElement('a');
+
+    // File name
+    downloadLink.download = filename;
+
+    // Create a link to the file
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+
+    // Hide download link
+    downloadLink.style.display = 'none';
+
+    // Add the link to the DOM
+    document.body.appendChild(downloadLink);
+
+    // Click the link
+    downloadLink.click();
+}
+
+    </script>
+</body>
+</html>

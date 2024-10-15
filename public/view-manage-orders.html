@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Work Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/d00c9b568a.js" crossorigin="anonymous"></script>
+    <!-- Remove duplicate Firebase libraries -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
+    <style>
+        /* Styles for modl */
+        .modl {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modl-content {
+            background-color: #1f2937;
+            margin: 20% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px;
+            color: #fff; /* Text color */
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            cursor: pointer;
+        }
+
+        /* Styles for form */
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="number"],
+        .input-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            color: #fff; /* Text color */
+            background-color: #333; /* Background color */
+            font-size: 1rem;
+            height: 30px; /* Adjust height as needed */
+        }
+
+        .input-group button {
+            padding: 0.5rem 1rem;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .input-group button:hover {
+            background-color: #45a049;
+        }
+
+        .input-group span.error {
+            color: #ff5733; /* Red color for error messages */
+            font-size: 0.8rem;
+        }
+        /* Add some padding and background color to the table */
+        table {
+            padding: 1em;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+
+        /* Table styles */
+        /* Add some padding and background color to the table */
+        table {
+            padding: 1em;
+            background-color: #1f2937;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        /* Add some padding, border and background color to the table cells */
+        th, td {
+            padding: 0.5em;
+            border: 1px solid #4B5563;
+            background-color: #1f2937;
+        }
+
+        /* Add some hover effect to the table rows */
+        tr:hover {
+            background-color: #2D3748;
+        }
+
+        /* Add some style to the table header */
+        thead {
+            background-color: #4B5563;
+            color: #E5E7EB;
+        }
+
+        #summary_section {
+            flex-direction: row;
+        }
+
+        #summary_stats {
+            margin-right: 1rem;
+        }
+
+        #owner_summary ul {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 20px; /* adjust this value to control the space between owners */
+        }
+
+        #owner_summary ul li {
+            list-style-type: none;
+            background-color: #4B5563;
+            color: #E5E7EB;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        #owner_summary ul li span {
+            font-weight: bold;
+        }
+
+        #owner_summary ul li:not(:last-child) {
+            margin-right: 20px;
+        }
+
+        #owner_summary ul li:hover {
+            background-color: #2D3748;
+        }
+
+        #work_details_table td.line-through {
+            text-decoration: line-through;
+        }
+
+        /* Modal styles */
+        .gpModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding-top: 60px;
+        }
+
+        .gpModal-content {
+            background-color: #2a2a2a;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        input[type=text], input[type=date], input[type=number] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        label {
+            margin-top: 12px;
+        }
+
+        button[type=submit] {
+            background-color: #3d98dd;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button[type=submit]:hover {
+            background-color: #357abd;
+        }
+
+        input:invalid {
+            border-color: red;
+        }
+        .error {
+            color: #ff5733; /* Red color for error messages */
+            display: none;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+
+
+    #ticker {
+        position: relative;
+        animation: ticker 10s linear infinite;
+    }
+
+        @keyframes ticker {
+         0% { left: 100%; }
+        100% { left: -100%; }
+        }
+
+            /* Dark theme and modern styles for the modal */
+    #ownerModal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+    }
+
+    #ownerModalContent {
+        background-color: #333;
+        color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 600px;
+        position: relative;
+    }
+
+    .close {
+        color: #aaa;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover, .close:focus {
+        color: #fff;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+
+    table th, table td {
+        border: 1px solid #555;
+        padding: 8px;
+        text-align: left;
+    }
+
+    table th {
+        background-color: #444;
+    }
+
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        margin: 10px 0;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
+    .not-paid {
+        background-color: #ffcccc; /* Light red for not paid */
+    }
+    .underpaid {
+        background-color: #ffebcc; /* Light orange for underpaid */
+    }
+    .overpaid {
+        background-color: #ccffcc; /* Light green for overpaid */
+    }
+
+    /* The Modal (background) */
+ .modal {
+          display: none; /* Hidden by default */
+          position: fixed; /* Stay in place */
+          z-index: 1; /* Sit on top */
+          left: 0;
+          top: 0;
+          width: 100%; /* Full width */
+          height: 100%; /* Full height */
+          overflow: auto; /* Enable scroll if needed */
+          background-color: rgb(0,0,0); /* Fallback color */
+          background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #180101;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  color: #f9f2f2; /* Set text color to black */
+}
+
+        /* The Close Button */
+        .close {
+          color: #aaa;
+          float: right;
+          font-size: 28px;
+          font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+          color: black;
+          text-decoration: none;
+          cursor: pointer;
+        }
+    </style>
+
+    <body class="bg-gray-900 text-white">
+        <nav class="flex justify-between items-center p-4 bg-gray-800">
+            <h1 class="text-2xl font-bold">Work Details</h1>
+            <div>
+                <button onclick="openAddStockModal()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Add Stock
+                </button>
+                
+
+                <button id="download_button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Download PDF
+                </button>
+                <button id="logout_button" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded" onclick="window.location.href='/login'">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+                <button id="add_button" class="ml-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </nav>
+
+        <div id="tickerContainer" style="overflow: hidden; white-space: nowrap;">
+            <div id="ticker" style="position: relative; animation: ticker 40s linear infinite;">
+                <!-- Add your ticker content here -->
+                <span>hi Issadeen</span>
+            </div>
+        </div>
+
+        <!-- modl -->
+        <!-- Add Work Form Modal -->
+        <div id="mymodl" class="modl" style="z-index: 999;">
+            <div class="modl-content bg-gray-800">
+                <span class="close" onclick="closemymodl()">×</span>
+                <form id="add_work_form">
+                    <div class="input-group">
+                        <label for="owner">Owner:</label>
+                        <input type="text" id="owner" name="owner" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="product">Product:</label>
+                        <input type="text" id="product" name="product" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="destination">Destination:</label>
+                        <input type="text" id="destination" name="destination" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="truck_number">Truck Number:</label>
+                        <input type="text" id="truck_number" name="truck_number" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="quantity">Quantity:</label>
+                        <input type="text" id="quantity" name="quantity" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="price">Price:</label>
+                        <input type="number" id="price" name="price" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="status">Status:</label>
+                        <input type="text" id="status" name="status" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="orderno">Order Number:</label>
+                        <input type="text" id="orderno" name="orderno" required>
+                        <span id="order_no_error" class="error" style="color: white;"></span>
+                    </div>
+                    <div class="input-group">
+                        <label for="depot">Depot:</label>
+                        <input type="text" id="depot" name="depot" required>
+                    </div>
+                    <button type="button" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded" onclick="closemodl()">Cancel</button>
+                    <button type="submit">Save</button>
+                </form>
+            </div>
+        </div>
+
+<!-- Insufficient Stock Modal -->
+<div id="noStockModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75" style="display: none; z-index: 1000;">
+    <div class="bg-gray-800 text-white p-4 rounded-lg w-1/2 relative">
+        <span class="close text-white text-2xl cursor-pointer absolute top-2 right-2" onclick="closeNoStockModal()">×</span> 
+        <p>Insufficient stock to fulfill the order. Please try again with a lower quantity or wait for restock.</p>
+    </div>
+</div>
+
+        <!-- Add Stock Modal -->
+        <div id="addStockModal" class="modl">
+            <div class="modl-content bg-gray-800">
+                <span class="close" onclick="closeAddStockModal()">×</span>
+                <form id="add_stock_form">
+                    <div class="input-group">
+                        <label for="stock_product">Product:</label>
+                        <input type="text" id="stock_product" name="stock_product" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="stock_quantity">Quantity:</label>
+                        <input type="text" id="stock_quantity" name="stock_quantity" required>
+                    </div>
+                    <button type="button" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded" onclick="closeAddStockModal()">Cancel</button>
+                    <button type="submit">Add Stock</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="max-w-full mx-auto my-10 p-8 bg-gray-800 rounded">
+            <table class="table-auto w-full" id="work_details_table">
+                <!-- Table content -->
+                <input type="text" id="search" placeholder="Search by owner's name" style="color: white; background-color: #2d3748;">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-2">Owner</th>
+                        <th class="px-4 py-2">Product</th>
+                        <th class="px-4 py-2">Truck Number</th>
+                        <th class="px-4 py-2">Quantity</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Order Number</th> <!-- New column -->
+                        <th class="px-4 py-2">Depot</th> <!-- New column -->
+                        <th class="px-4 py-2">destination</th> <!-- New column -->
+                        <th class="px-4 py-2">Actions</th> <!-- New column for delete button -->
+                    </tr>
+                </thead>
+                <tbody id="work_details_table_body">
+                    <!-- Table rows will be added dynamically using JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- The Modal -->
+        <div id="gpModal" class="gpModal">
+            <div class="gpModal-content">
+                <span class="close" onclick="closeModal()">×</span>
+                <form id="gatePassForm">
+                    <label for="code">Code:</label>
+                    <input type="text" id="code" name="code" required>
+
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="date" required>
+
+                    <label for="licensePlate">License Plate:</label>
+                    <input type="text" id="licensePlate" name="licensePlate" pattern="^[A-Z0-9]+-[A-Z0-9]+$" required>
+                    <div id="licensePlateError" class="error">Please use the format: ABC1234-XYZ5678</div>
+
+                    <label for="destination">Destination:</label>
+                    <input type="text" id="destination" name="destination" required>
+
+                    <label for="fuelType">Fuel Type:</label>
+                    <input type="text" id="fuelType" name="fuelType" required>
+
+                    <label for="totalLiters">Total Liters:</label>
+                    <input type="number" id="totalLiters" name="totalLiters" required>
+
+                    <label for="liters1">Liters 1:</label>
+                    <input type="number" id="liters1" name="liters1" required>
+
+                    <label for="liters2">Liters 2:</label>
+                    <input type="number" id="liters2" name="liters2" required>
+
+                    <label for="liters3">Liters 3:</label>
+                    <input type="number" id="liters3" name="liters3" required>
+
+                    <label for="passNumber">Pass Number:</label>
+                    <input type="text" id="passNumber" name="passNumber" required>
+
+                    <label for="name1">Name 1:</label>
+                    <input type="text" id="name1" name="name1" required>
+
+                    <label for="name2">Name 2:</label>
+                    <input type="text" id="name2" name="name2" required>
+
+                    <label for="loadingPoint">Loading Point:</label>
+                    <input type="text" id="loadingPoint" name="loadingPoint" required>
+
+                    <label for="at20">At 20:</label>
+                    <input type="text" id="at20" name="at20" required>
+
+                    <button type="button" onclick="generatePDF(this)">Generate Gate Pass</button>
+                </form>
+            </div>
+        </div>
+        <div id="stocks"></div>
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+<!-- Modal content -->
+<div class="modal-content">
+<span class="close">&times;</span>
+<p>Your session will end soon due to inactivity.</p>
+</div>
+</div>
+
+<!-- Summary section -->
+<div id="summary_section" class="mt-4 flex">
+    <h2 class="text-lg font-semibold mb-2">Summary</h2>
+    <div class="mt-2">  <!-- Added a container for stats -->
+        <h3 class="text-md font-medium mb-1">..........................................................</h3>  <!-- Added a heading for stats -->
+        <div id="summary_stats" class="flex flex-wrap gap-4"></div>
+    </div>
+    <div id="owner_summary"></div>
+</div>
+
+        <button id="unpaidPreviewButton">Unpaid Preview</button>
+
+        <div id="unpaidTrucksModal" class="modal">
+        <div id="unpaidTrucksModalContent" class="modal-content">
+            <span class="close" onclick="closeUnpaidTrucksModal()">×</span>
+            <!-- Unpaid trucks content will be injected here -->
+        </div>
+        </div>
+
+        <script>
+            // Initialize Firebase app
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            // Get a reference to the Realtime Database
+            const db = firebase.database();
+
+            // Get a reference to the "work_details" node in the database
+            const workDetailsRef = db.ref("work_details");
+
+            // Hide the gatePassForm initially
+            document.getElementById('gatePassForm').style.display = 'none';
+
+            // Get the modl
+            const modl = document.getElementById("mymodl");
+            // Get the button that opens the modl
+            const btn = document.getElementById("add_button");
+            // Get the <span> element that closes the modl
+            const span = document.getElementsByClassName("close")[0];
+
+            // Define the openmodl function
+            function openmodl() {
+                modl.style.display = "block";
+            }
+
+            // Define the closemodl function
+            function closemodl() {
+                modl.style.display = "none";
+            }
+
+            // When the user clicks the button, open the modl and stop event propagation
+            btn.onclick = function(event) {
+                event.stopPropagation();
+                openmodl();
+            }
+
+            // When the user clicks on <span> (x), close the modl
+            span.onclick = function() {
+                closemodl();
+            }
+
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function(event) {
+                event.stopPropagation();
+                closemodl();
+            }
+
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+                if (event.target == modl) {
+                    closemodl();
+                }
+            }
+
+            function openAddStockModal() {
+                document.getElementById('addStockModal').style.display = 'block';
+            }
+
+            function closeAddStockModal() {
+                document.getElementById('addStockModal').style.display = 'none';
+            }
+        </script>
+        <script>
+
+// Declare summary variables at a higher scope
+var totalOrders = 0;
+var queuedOrders = 0;
+var unqueuedOrders = 0;
+var agoOrders = 0;
+var pmsOrders = 0;
+var loadedOrders = 0;
+var ownerSummary = {};
+var loadedTrucks = 0; 
+var pendingOrders = 0;
+
+// Fetch initial data on page load
+window.onload = function() {
+  workDetailsRef.once('value', function(snapshot) {
+    updateSummaryData(snapshot); // Update summary variables with initial data
+    updateSummarySection(); // Update the summary section
+    updateTicker(); // Update the ticker
+  });
+};
+
+// Listen for changes to the data in the "work_details" node
+workDetailsRef.on("value", function(snapshot) {
+  updateSummaryData(snapshot); // Update summary variables on changes
+  updateSummarySection(); // Update the summary section
+  updateTicker(); // Update the ticker
+});
+
+// Function to update summary variables from a snapshot
+function updateSummaryData(snapshot) {
+    var workDetails = snapshot.val();
+    if (workDetails) {
+        // Reset summary variables
+        totalOrders = 0;
+        queuedOrders = 0;
+        unqueuedOrders = 0;
+        agoOrders = 0;
+        pmsOrders = 0;
+        loadedOrders = 0;
+        pendingOrders = 0;
+        ownerSummary = {};
+        loadedTrucks = 0;
+
+        snapshot.forEach(function(childSnapshot) {
+            var childData = childSnapshot.val();
+            totalOrders++;
+
+            // Check if the order is loaded
+            if (childData.loaded === true || childData.loaded === "true") {
+                loadedOrders++;
+                loadedTrucks++; // Increment loaded trucks
+            }
+
+            // Increment pending orders count
+            if (childData.status === "queued" && (childData.loaded !== true && childData.loaded !== "true")) {
+                pendingOrders++;
+            }
+
+            // Increment ago or pms orders count based on product
+            if (childData.product.trim().toUpperCase() === "AGO") {
+                agoOrders++;
+            } else if (childData.product.trim().toUpperCase() === "PMS") {
+                pmsOrders++;
+            }
+
+            // Increment queued or unqueued orders based on status
+            if (childData.status === "queued") {
+                queuedOrders++;
+            } else {
+                unqueuedOrders++;
+            }
+      // Increment owner's orders count and product count
+      if (!ownerSummary[childData.owner]) {
+        ownerSummary[childData.owner] = {
+          totalOrders: 1,
+          agoOrders: childData.product.trim().toUpperCase() === "AGO" ? 1 : 0,
+          pmsOrders: childData.product.trim().toUpperCase() === "PMS" ? 1 : 0,
+          queuedOrders: childData.status === "queued" ? 1 : 0,
+          unqueuedOrders: childData.status !== "queued" ? 1 : 0,
+          loadedOrders: childData.loaded === true || childData.loaded === "true" ? 1 : 0,
+          pendingOrders: childData.status === "queued" && (childData.loaded !== true && childData.loaded !== "true") ? 1 : 0,
+          products: {},
+          loadedTrucks: [],
+          pendingTrucks: []
+        };
+      } else {
+        ownerSummary[childData.owner].totalOrders++;
+        ownerSummary[childData.owner].agoOrders += childData.product.trim().toUpperCase() === "AGO" ? 1 : 0;
+        ownerSummary[childData.owner].pmsOrders += childData.product.trim().toUpperCase() === "PMS" ? 1 : 0;
+        ownerSummary[childData.owner].queuedOrders += childData.status === "queued" ? 1 : 0;
+        ownerSummary[childData.owner].unqueuedOrders += childData.status !== "queued" ? 1 : 0;
+        ownerSummary[childData.owner].loadedOrders += childData.loaded === true || childData.loaded === "true" ? 1 : 0;
+        ownerSummary[childData.owner].pendingOrders += childData.status === "queued" && (childData.loaded !== true && childData.loaded !== "true") ? 1 : 0;
+      }
+
+      // Increment product count for each owner
+      if (!ownerSummary[childData.owner].products[childData.product]) {
+        ownerSummary[childData.owner].products[childData.product] = 1;
+      } else {
+        ownerSummary[childData.owner].products[childData.product]++;
+      }
+
+      // Track loaded and pending trucks
+      if (childData.loaded === true || childData.loaded === "true") {
+        ownerSummary[childData.owner].loadedTrucks.push(childData);
+      } else if (childData.status === "queued") {
+        ownerSummary[childData.owner].pendingTrucks.push(childData);
+      }
+
+      // ... (Your existing code for creating table rows)
+    });
+  }
+}
+
+
+function handleButtonClick(button, owner) {
+  button.innerHTML = 'Fetching...'; // Store the button object
+  showOwnerModal(owner, button); // Pass the button to the modal
+}
+function closeOwnerModal(button) {
+  const modal = document.getElementById("ownerModal");
+  modal.style.display = "none";
+  // Reset the button text
+  if (button) {
+    button.innerHTML = "Info";
+  }
+}
+
+function showOwnerModal(owner, button) { // Pass button as an argument
+  const modal = document.getElementById("ownerModal");
+  const modalContent = document.getElementById("ownerModalContent");
+  const ownerData = ownerSummary[owner];
+
+  // Initialize or reset totalAmountPaid to 0 before fetching new payments
+  let totalAmountPaid = 0;
+
+  // Fetch payment details from Firebase
+  const paymentsRef = firebase.database().ref('payments/' + owner);
+  paymentsRef.once('value', (snapshot) => {
+    const payments = snapshot.val();
+    let paymentsHtml = '<h4 class="text-md font-semibold mt-4">Payment Details</h4><ul>';
+    if (payments) {
+      for (let key in payments) {
+        const payment = payments[key];
+        totalAmountPaid += payment.amountPaid; // Accumulate total paid amount
+        paymentsHtml += `<li>Amount Paid: $${payment.amountPaid.toFixed(2)} on ${new Date(payment.timestamp).toLocaleDateString()}</li>`;
+      }
+    } else {
+      paymentsHtml += '<li>No Payment History Found</li>';
+    }
+    paymentsHtml += '</ul>';
+
+    // Update ownerData with the new totalAmountPaid
+    ownerData.totalAmountPaid = totalAmountPaid;
+
+    // Continue with the rest of the modal setup...
+    let totalAmountNotPaid = 0;
+    let totalAmountToBePaid = 0;
+
+    const loadedTrucksHtml = `
+      <table>
+        <thead>
+          <tr>
+            <th>Index</th>
+            <th>Truck</th>
+            <th>Product</th>
+            <th>Price</th>
+            <th>At20</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ownerData.loadedTrucks.map((truck, index) => {
+            const amount = truck.price * truck.at20;
+            totalAmountToBePaid += amount;
+            let amountHtml = `$${amount.toFixed(2)}`;
+            let rowClass = '';
+
+            if (truck.paid) {
+              if (truck.amountPaid < amount) {
+                amountHtml = `<span style="color: orange;">$${truck.amountPaid.toFixed(2)} Underpaid</span>`;
+                totalAmountNotPaid += (amount - truck.amountPaid); // Add only the unpaid part
+                rowClass = 'underpaid';
+              } else if (truck.amountPaid > amount) {
+                amountHtml = `<span style="color: green;">$${truck.amountPaid.toFixed(2)} Overpaid</span>`;
+                rowClass = 'overpaid';
+              } else {
+                amountHtml = `<s>$${amount.toFixed(2)}</s> Paid in Full`;
+              }
+            } else {
+              amountHtml = `$${amount.toFixed(2)} Not Paid`;
+              totalAmountNotPaid += amount; // Add the whole amount
+              rowClass = 'not-paid'; // Add class to not paid trucks
+            }
+
+            return `
+              <tr class="${rowClass}">
+                <td>${index + 1}</td>
+                <td>${truck.truck_number}</td>
+                <td>${truck.product}</td>
+                <td>$${Number(truck.price).toFixed(2)}</td>
+                <td>${truck.at20}</td>
+                <td>${amountHtml}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+
+    const pendingTrucksHtml = `
+      <table>
+        <thead>
+          <tr>
+            <th>Index</th>
+            <th>Truck</th>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ownerData.pendingTrucks.map((truck, index) => {
+            return `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${truck.truck_number}</td>
+                <td>${truck.product}</td>
+                <td>$${Number(truck.price).toFixed(2)}</td>
+                <td>${truck.quantity}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+
+    const totalAmountHtml = totalAmountNotPaid > 0 ? `$${totalAmountNotPaid.toFixed(2)}` : '-';
+    const pendingBalance = totalAmountToBePaid - totalAmountPaid;
+
+    modalContent.innerHTML = `
+      <button id="copyButton" class="bg-green-500 text-white p-2 rounded absolute top-4 right-16">Copy</button>
+      <span class="close" onclick="closeOwnerModal()">×</span>
+      <h3 class="text-lg font-semibold">${owner}</h3>
+      <div>Total Orders: ${ownerData.totalOrders}</div>
+      <div>AGO Orders: ${ownerData.agoOrders}</div>
+      <div>PMS Orders: ${ownerData.pmsOrders}</div>
+      <h4 class="text-md font-semibold mt-4">Loaded Trucks</h4>
+      ${loadedTrucksHtml}
+      <div>Total Amount to be Paid: ${totalAmountHtml}</div>
+      <h4 class="text-md font-semibold mt-4">Pending Trucks</h4>
+      ${pendingTrucksHtml}
+      <h4 class="text-md font-semibold mt-4">Payment Stats</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Total to be Paid</th>
+            <th>Paid Amount</th>
+            <th>Pending Balance</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>$${totalAmountToBePaid.toFixed(2)}</td>
+            <td>$${totalAmountPaid.toFixed(2)}</td>
+            <td>$${pendingBalance.toFixed(2)}</td>
+            <td><button onclick="addPaidAmount('${owner}')" class="bg-blue-500 text-white p-2 rounded">Add Paid</button></td>
+          </tr>
+        </tbody>
+      </table>
+      ${paymentsHtml}
+    `;
+
+    modal.style.display = "flex";
+  });
+
+  document.getElementById("copyButton").addEventListener("click", async function() {
+    const htmlContent = modalContent.innerHTML;
+    try {
+      await navigator.clipboard.writeText(htmlContent);
+      alert("Content copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  });
+
+  // Update button text to "Fetching..." if button is provided
+  if (button) {
+    button.innerHTML = 'Fetching...'; 
+  }
+}
+
+function handleButtonClick(button, owner) {
+  showOwnerModal(owner, button); // Pass the button to showOwnerModal
+}
+
+function addPaidAmount(owner) {
+    const amount = prompt("Enter the paid amount:");
+    if (amount !== null && !isNaN(amount) && amount > 0) {
+        const parsedAmount = parseFloat(amount);
+        const paymentRef = firebase.database().ref('payments/' + owner);
+        paymentRef.push({
+            amountPaid: parsedAmount,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            console.log("Payment saved successfully.");
+            showOwnerModal(owner); // Refresh the modal to show updated payment stats
+        }).catch((error) => {
+            console.error("Error saving payment: ", error);
+            alert("Failed to save payment. Please try again.");
+        });
+    } else {
+        alert("Invalid amount entered");
+    }
+} 
+
+function updateOwnerSummary() {
+    const ownerSummaryDiv = document.getElementById("owner_summary");
+    ownerSummaryDiv.innerHTML = "";
+    ownerSummaryDiv.classList.add("flex", "flex-wrap", "gap-4");
+
+    for (const owner in ownerSummary) {
+        const ownerData = ownerSummary[owner];
+        ownerSummaryDiv.innerHTML += `
+            <div class="bg-gray-700 p-4 rounded mt-4 basis-1/3">
+                <h3 class="text-lg font-semibold">${owner}</h3>
+                <div>Total Orders: ${ownerData.totalOrders}</div>
+                <div>Queued Orders: ${ownerData.queuedOrders}</div>
+                <div>Unqueued Orders: ${ownerData.unqueuedOrders}</div>
+                <div>Loaded Orders: ${ownerData.loadedOrders || 0}</div>
+                <div>Pending Orders: ${ownerData.pendingOrders || 0}</div>
+                <div>AGO Orders: ${ownerData.agoOrders}</div>
+                <div>PMS Orders: ${ownerData.pmsOrders}</div>
+                <button id="infoButton" onclick="handleButtonClick(this, '${owner}')" class="bg-blue-500 text-white p-2 rounded mt-2">Info</button>
+            </div>
+        `;
+    }
+}
+
+function handleButtonClick(button, owner) {
+    // Change the button text to 'Fetching...'
+    button.innerHTML = 'Fetching...';
+
+    // Set a timeout to revert the button text back to 'Info' after 3 seconds
+    setTimeout(() => {
+        button.innerHTML = 'Info';
+    }, 3000);
+
+    // Call showOwnerModal or any other logic you need
+    showOwnerModal(owner);
+}
+
+function updateSummarySection() {
+    const summaryStats = document.getElementById("summary_stats");
+
+    summaryStats.innerHTML = `
+        <div class="bg-gray-700 p-4 rounded">
+            <div>Total Orders: ${totalOrders}</div>
+            <div>Queued Orders: ${queuedOrders}</div>
+            <div>Unqueued Orders: ${unqueuedOrders}</div>
+            <div>Loaded Orders: ${loadedOrders}</div>
+            <div>Pending Orders: ${pendingOrders}</div>
+            <div>AGO Orders: ${agoOrders}</div>
+            <div>PMS Orders: ${pmsOrders}</div>
+            <div>Loaded Trucks: ${loadedTrucks}</div>
+        </div>
+    `;
+
+    updateOwnerSummary();
+}
+
+function updateTicker() {
+    const ticker = document.getElementById('ticker');
+    ticker.innerHTML = `Total Orders: ${totalOrders}, Queued Orders: ${queuedOrders}, Unqueued Orders: ${unqueuedOrders}, AGO Orders: ${agoOrders}, PMS Orders: ${pmsOrders}`;
+}
+
+updateTicker();
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Modal HTML
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="ownerModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+            <div id="ownerModalContent" class="bg-gray-800 p-6 rounded shadow-lg w-1/2 text-white relative">
+                <button onclick="closeOwnerModal()" class="bg-red-500 text-white p-2 rounded absolute top-4 right-4">Close</button>
+                <button id="copyButton" class="bg-green-500 text-white p-2 rounded absolute top-4 right-16 hidden">Copy</button>
+            </div>
+        </div>
+    `);
+
+    document.addEventListener("DOMContentLoaded", function() {
+    // Add the copy button to the modal dynamically
+  document.getElementById("ownerModalContent").appendChild(document.getElementById("copyButton")); 
+  document.getElementById("copyButton").classList.remove("hidden"); 
+    });
+
+    // Function to copy the content of the modal
+    document.getElementById("copyButton").addEventListener("click", function() {
+        const range = document.createRange();
+        range.selectNode(modalContent);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+        window.getSelection().removeAllRanges();
+    
+        // Parse copied content
+        const copiedContent = modalContent.innerText;
+        const lines = copiedContent.split('\n');
+        let tableHtml = '<table>';
+    
+        lines.forEach(line => {
+            const parts = line.split(': ');
+            tableHtml += '<tr><td>' + parts[0] + '</td><td>' + parts[1] + '</td></tr>';
+        });
+    
+        tableHtml += '</table>';
+    
+        // Replace modal content with table
+        modalContent.innerHTML = tableHtml;
+    
+        alert("Content copied to clipboard and represented as a table");
+    });
+
+  // Your other code...
+
+}); 
+
+</script>
+<script>
+// Listen for changes to the data in the "work_details" node
+workDetailsRef.on("value", function(snapshot) {
+    var workDetails = snapshot.val();
+    if (workDetails) {
+        var tableBody = document.getElementById("work_details_table_body");
+        tableBody.innerHTML = "";
+        // Loop through the child nodes of the "work_details" node
+        snapshot.forEach(function(childSnapshot) {
+            var childData = childSnapshot.val();
+            // Check if all required data is present
+            if (childData.owner && childData.product && childData.truck_number && childData.quantity && childData.orderno && childData.depot && childData.destination) {
+                // Create table rows
+                var row = tableBody.insertRow();
+                row.insertCell().textContent = childData.owner;
+                row.insertCell().textContent = childData.product;
+                // Create cell for truck number
+                var truckNumberCell = row.insertCell();
+                var truckInput = document.createElement("input");
+                truckInput.type = "text";
+                truckInput.value = childData.truck_number;
+                truckInput.classList.add("bg-gray-800", "text-white", "p-2", "rounded", "focus:outline-none", "focus:bg-gray-900");
+                truckInput.disabled = true; // Disable input by default
+                truckNumberCell.appendChild(truckInput);
+                // Display the latest previous truck number
+                if (childData.previous_trucks && childData.previous_trucks.length > 0) {
+                    var latestPreviousTruck = childData.previous_trucks[childData.previous_trucks.length - 1];
+                    var previousTruckText = document.createElement("small");
+                    previousTruckText.textContent = "Previous: " + latestPreviousTruck;
+                    truckNumberCell.appendChild(previousTruckText);
+                }
+                row.insertCell().textContent = childData.quantity;
+                // Create cell for status
+                var statusCell = row.insertCell();
+                var statusButton = document.createElement("button");
+                statusButton.classList.add("px-4", "py-2", "rounded");
+                statusButton.textContent = childData.status;
+                statusButton.onclick = function() {
+                    childData.status = childData.status === "queued" ? "not queued" : "queued";
+                    statusButton.textContent = childData.status;
+                    // Save the updated status to Firebase
+                    workDetailsRef.child(childSnapshot.key).update({ status: childData.status });
+                };
+
+                // If the truck is loaded, grey out the status button and disable it
+                if (childData.loaded) {
+                    statusButton.classList.add("bg-gray-500"); // Add a class to make the button appear greyed out
+                    statusButton.disabled = true; // Disable the button
+                }
+
+                statusCell.appendChild(statusButton);
+                row.insertCell().textContent = childData.orderno; // New field
+                row.insertCell().textContent = childData.depot; // New field
+                row.insertCell().textContent = childData.destination; // New field
+                // Add button for loaded/paid status change
+                var actionsCell = row.insertCell();
+
+                // Create the actions button (Paid/Loaded)
+                var actionsButton = document.createElement("button");
+                actionsButton.classList.add("bg-green-600", "hover:bg-green-700", "px-4", "py-2", "rounded", "mr-4");
+                // Create Font Awesome icons
+                var paidIcon = document.createElement("i");
+                paidIcon.classList.add("fas", "fa-check");
+
+                // Add GP button 
+                const gpButton = document.createElement("button");
+                gpButton.textContent = "GP";
+                gpButton.classList.add("bg-blue-600", "hover:bg-blue-700", "px-4", "py-2", "rounded", "mr-4");
+                gpButton.style.display = 'none'; // Hide GP button initially
+                gpButton.onclick = function() {
+                    // Populate and show the gate pass form
+                    populateForm(this);
+                    document.getElementById('gatePassForm').style.display = 'block';
+                };
+
+                // Create a container for the buttons
+                var buttonContainer = document.createElement("div");
+                buttonContainer.style.display = "flex";
+
+                // Set initial button content for actionsButton
+                if (childData.loaded && childData.paid) {
+                    actionsButton.appendChild(paidIcon);
+                    actionsButton.disabled = true; // Disable the button after paid
+                    buttonContainer.appendChild(actionsButton);
+                    buttonContainer.appendChild(gpButton); // Append GP button after the actionsButton
+
+                    // Show the GP button when paid is true
+                    if (childData.paid) {
+                        gpButton.style.display = 'inline-block'; // Display GP button inline
+                    }
+                } else if (childData.loaded) {
+                    actionsButton.textContent = "Paid?";
+                    buttonContainer.appendChild(actionsButton);
+                    buttonContainer.appendChild(gpButton); // Append GP button after the actionsButton
+                } else {
+                    actionsButton.textContent = "Loaded?";
+                    buttonContainer.appendChild(actionsButton);
+                    buttonContainer.appendChild(gpButton); // Append GP button after the actionsButton
+                }
+
+                // Append the container to the actionsCell
+                actionsCell.appendChild(buttonContainer);
+
+                // Add "Change Truck" button
+                var changeTruckButton = document.createElement("button");
+                changeTruckButton.textContent = "Change Truck";
+                changeTruckButton.classList.add("bg-blue-600", "hover:bg-blue-700", "px-4", "py-2", "rounded", "mr-4");
+                changeTruckButton.onclick = function() {
+                    // Check if the order is loaded
+                    if (childData.loaded) {
+                        // If the order is loaded, return immediately without making any changes
+                        return;
+                    }
+                    if (changeTruckButton.textContent === "Change Truck") {
+                        truckInput.disabled = false;
+                        changeTruckButton.textContent = "Save";
+                        var previousTruckText = document.createElement("small");
+                        previousTruckText.textContent = "Previous: " + childData.truck_number;
+                        truckNumberCell.appendChild(previousTruckText);
+                    } else {
+                        // Save the new truck number
+                        var newTruckNumber = truckInput.value;
+                        // Add the old truck number to the array of previous truck numbers
+                        if (!childData.previous_trucks) {
+                            childData.previous_trucks = [];
+                        }
+                        childData.previous_trucks.push(childData.truck_number);
+                        childData.truck_number = newTruckNumber;
+                        // Disable input after saving
+                        truckInput.disabled = true;
+                        changeTruckButton.textContent = "Change Truck";
+                        // Save the updated truck number and previous truck numbers to Firebase
+                        workDetailsRef.child(childSnapshot.key).update({ truck_number: childData.truck_number, previous_trucks: childData.previous_trucks });
+                    }
+                };
+
+                // Hide the Change Truck button if the order is loaded
+                changeTruckButton.style.display = childData.loaded ? "none" : "inline-block";
+
+                // Create a container for the 'Loaded/Paid' buttons and 'Change Truck' button
+                var actionButtonsContainer = document.createElement("div");
+                actionButtonsContainer.style.display = "flex";
+                actionButtonsContainer.appendChild(buttonContainer);
+                actionButtonsContainer.appendChild(changeTruckButton);
+
+                actionsCell.appendChild(actionButtonsContainer);
+                // Add delete button to the row
+                var deleteCell = row.insertCell();
+                var deleteButton = document.createElement("button");
+                deleteButton.classList.add("bg-red-600", "hover:bg-red-700", "px-4", "py-2", "rounded");
+                deleteButton.onclick = function() {
+                    deleteOrder(childSnapshot.key); // Pass the key of the order to be deleted
+                };
+                // Create Font Awesome delete icon
+                var deleteIcon = document.createElement("i");
+                deleteIcon.classList.add("fas", "fa-trash-alt");
+                deleteButton.appendChild(deleteIcon);
+                deleteCell.appendChild(deleteButton);
+
+                actionsButton.onclick = function() {
+    if (!childData.loaded) {
+        // Ask for at20 before marking as loaded
+        var at20 = prompt("Please enter at20 before marking as loaded");
+        if (at20) {
+            // Save at20 to Firebase
+            workDetailsRef.child(childSnapshot.key).update({ at20: at20 }).catch(console.error);
+            childData.loaded = true;
+            childData.crossedOut = true;
+            actionsButton.textContent = "Paid";
+            // Add the line-through class to all cells
+            for (var i = 0; i < row.cells.length; i++) {
+                row.cells[i].classList.add("line-through");
+            }
+            workDetailsRef.child(childSnapshot.key).update({ loaded: childData.loaded, crossedOut: childData.crossedOut }).catch(console.error);
+        } else {
+            // Prevent marking as loaded if at20 is not provided
+            alert("You must provide at20 before marking as loaded");
+        }
+    } else if (!childData.paid) {
+        // Ask for payment amount
+        var paymentAmount = prompt("Please enter the payment amount");
+        if (paymentAmount) {
+            paymentAmount = parseFloat(paymentAmount);
+            if (!isNaN(paymentAmount) && paymentAmount > 0) {
+                childData.paid = true;
+                childData.crossedOut = true;
+                actionsButton.textContent = "";
+                actionsButton.appendChild(paidIcon);
+                actionsButton.disabled = true;
+
+                // Update balance
+                if (!childData.balance) {
+                    childData.balance = 0;
+                }
+                var balanceChange = paymentAmount - childData.quantity;
+                childData.balance += balanceChange;
+
+                // Show balance in the UI (Optional, depending on your requirements)
+                var balanceCell = row.insertCell();
+                balanceCell.textContent = "Balance: " + childData.balance.toFixed(2);
+
+                workDetailsRef.child(childSnapshot.key).update({
+                    loaded: childData.loaded,
+                    paid: childData.paid,
+                    crossedOut: childData.crossedOut,
+                    balance: childData.balance
+                }).catch(console.error);
+            } else {
+                alert("Invalid payment amount");
+            }
+        } else {
+            alert("You must provide a payment amount");
+        }
+    }
+};
+            } else {
+                console.error("Invalid data format: ", childData);
+            }
+        });
+    
+       
+            
+                
+        
+// After all table rows have been created, add the event listener for the download button
+document.getElementById("download_button").addEventListener("click", function () {
+    let docDefinition = {
+        content: [
+            { text: 'Work Details Report', style: 'header' }, // Main heading
+            {
+                table: {
+                    widths: [30, 90, 90, 90, 90, 90, 90, 90, 90], 
+                    body: [
+                        ['Index', 'Owner', 'Product', 'Truck Number', 'Quantity', 'Status', 'Order Number', 'Depot', 'destination'],
+                    ],
+                },
+                layout: {
+                    fillColor: function (rowIndex, node, columnIndex) {
+                        return (rowIndex % 2 === 0 && rowIndex !== 0) ? '#f2f2f2' : null;
+                    }
+                }
+            },
+        ],
+        styles: {
+            header: {
+                fontSize: 22,
+                bold: true,
+                alignment: 'center',
+                margin: [0, 0, 0, 20]
+            },
+            subheader: {
+                fontSize: 16,
+                bold: true,
+                margin: [0, 20, 0, 10]
+            },
+            ownerName: {
+                fontSize: 14,
+                bold: true,
+                margin: [0, 10, 0, 5]
+            },
+            tableHeader: {
+                bold: true,
+                fontSize: 12,
+                fillColor: '#1f2937',
+                color: '#fff' 
+            },
+            footer: {
+                fontSize: 10,
+                color: 'grey',
+                alignment: 'right',
+                margin: [0, 10, 20, 0]
+            }
+        },
+        footer: function (currentPage, pageCount) {
+            return { text: 'Page ' + currentPage.toString() + ' of ' + pageCount, style: 'footer' };
+        },
+        pageOrientation: 'landscape',
+    };
+
+    let tableRows = Array.from(document.querySelectorAll("table tr"));
+    let rowDataArray = [];
+
+    tableRows.forEach(function(row) {
+        let cells = Array.from(row.querySelectorAll("td")).slice(0, 8);
+        let rowData = [];
+        cells.forEach(function(cell) {
+            if (cell !== undefined) {
+                let inputElement = cell.querySelector("input");
+                if (inputElement) {
+                    rowData.push({ text: inputElement.value.trim() });
+                } else {
+                    rowData.push({ text: cell.textContent.trim() });
+                }
+            } else {
+                console.warn("Undefined cell found in row:", row);
+                return;
+            }
+        });
+        if (rowData.length === 8) { // Only add rows with the correct number of cells
+            rowDataArray.push(rowData);
+        } else {
+            console.warn("Row with mismatched number of cells:", row);
+        }
+    });
+
+    // Sort, handling the header row separately
+    rowDataArray.sort((a, b) => {
+        if (a[0].text === 'Index') return -1; // Always place header first
+        if (b[0].text === 'Index') return 1; // Always place header first
+        return a[1].text.localeCompare(b[1].text); // Sort data rows by 'Owner'
+    });
+
+    // Add data to table (once)
+    rowDataArray.forEach((rowData, index) => {
+        rowData.unshift({ text: (index + 1).toString() }); // Add index
+        docDefinition.content[1].table.body.push(rowData); // Add to the correct table
+    });
+
+    // Add Total Summary (no changes here)
+    docDefinition.content.push({ text: 'Total Summary', style: 'subheader' });
+    docDefinition.content.push({
+        ul: [
+            { text: 'Total Orders: ' + totalOrders },
+            { text: 'Queued Orders: ' + queuedOrders },
+            { text: 'Unqueued Orders: ' + unqueuedOrders },
+            { text: 'Loaded Trucks: ' + loadedTrucks },
+            { text: 'Pending Orders: ' + pendingOrders },
+            { text: 'AGO Orders: ' + agoOrders },
+            { text: 'PMS Orders: ' + pmsOrders }
+        ],
+        margin: [0, 0, 0, 20]
+    });
+
+
+    pdfMake.createPdf(docDefinition).download('work_details_report.pdf'); 
+});
+
+ }
+});
+
+
+document.getElementById("add_work_form").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+    const newWorkDetail = {};
+    formData.forEach(function(value, key) {
+        newWorkDetail[key] = value;
+    });
+
+    // Get the order number input field and error message elements
+    const orderNoInput = document.getElementById('orderno');
+    const orderNoError = document.getElementById('order_no_error');
+
+    // Check if an order with the same order number already exists
+    const ordersRef = firebase.database().ref('/work_details');
+    ordersRef.orderByChild('orderno').startAt(newWorkDetail.orderno).endAt(newWorkDetail.orderno + '\uf8ff').once('value', snapshot => {
+        if (snapshot.exists()) {
+            // Get the truck number from the existing order
+            const existingOrder = Object.values(snapshot.val())[0]; // Assuming only one matching order
+            const existingTruckNumber = existingOrder.truck_number;
+        
+            // Display error message with the truck number
+            orderNoError.textContent = `Order number already exists and is used by truck number: ${existingTruckNumber}. Please choose a different one.`;
+            orderNoError.style.display = 'block'; // Show the error message
+            orderNoInput.focus(); // Focus on the input field
+        } else {
+            // Check if sufficient stock is available
+            const stockRef = firebase.database().ref(`/stocks/${newWorkDetail.product}`);
+            stockRef.once('value').then(snapshot => {
+                const stockQuantity = snapshot.val() ? snapshot.val().quantity : 0;
+                if (stockQuantity >= parseFloat(newWorkDetail.quantity)) {
+                    // Sufficient stock - Save the order and update stock
+                    const newOrderId = generateUniqueId(); // Generate a unique ID for the new order
+                    firebase.database().ref('work_details/' + newOrderId).set(newWorkDetail)
+                    .then(() => {
+                        console.log('Order saved successfully');
+
+                        // Update stock quantity
+                        stockRef.update({
+                            quantity: stockQuantity - parseFloat(newWorkDetail.quantity)
+                        })
+                        .then(() => {
+                            console.log('Order saved successfully, stock updated.');
+                        })
+                        .catch((error) => {
+                            console.error('Error updating stock:', error);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Error saving order:', error);
+                    });
+                } else {
+                    // Insufficient stock - display error message
+                    document.getElementById("noStockModal").style.display = "flex";
+                    // Prevent order from being saved
+                    event.stopPropagation(); // Prevent default form submission
+                }
+            })
+            .catch((error) => {
+                console.error('Error checking stock:', error);
+            });
+        }
+    }).catch(error => {
+        console.error('Error checking order number:', error);
+    });
+});
+
+// Function to generate unique ID
+function generateUniqueId() {
+    // Generate a random ID or use a library like UUID for unique ID generation
+    // Example:
+    return Math.random().toString(36).substr(2, 9);
+}
+
+document.getElementById("add_stock_form").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+    const newStock = {};
+    formData.forEach(function(value, key) {
+        newStock[key] = value;
+    });
+
+    // Use the correct keys to access the form data
+    const stockRef = firebase.database().ref(`/stocks/${newStock.stock_product}`);
+
+    // Add the new stock to Firebase
+    stockRef.set({
+        product: newStock.stock_product,
+        quantity: parseFloat(newStock.stock_quantity)
+    }).then(() => {
+        console.log('Stock added successfully');
+        closeAddStockModal();
+    }).catch(error => {
+        console.error('Error adding stock:', error);
+    });
+
+    // log the form data to the console for debugging purposes
+    for (var pair of formData.entries()) {
+        console.log(pair[0]+ ', '+ pair[1]); 
+    }
+});
+
+// Get a reference to the stocks node in Firebase
+const stocksRef = firebase.database().ref('/stocks');
+
+// Get a reference to the stocks div
+const stocksDiv = document.getElementById('stocks');
+
+// Listen for changes to the stocks data
+stocksRef.on('value', function(snapshot) {
+    // The snapshot contains the current data
+    const stocks = snapshot.val();
+
+    // Clear the stocks div
+    stocksDiv.innerHTML = '';
+
+    // Loop through the stocks and create an element for each one
+    for (let product in stocks) {
+        const quantity = stocks[product].quantity;
+        let estimatedTrucks;
+
+        // Calculate the estimated trucks based on the product type
+        if (product === 'ago') {
+            estimatedTrucks = quantity / 36;
+        } else if (product === 'pms') {
+            estimatedTrucks = quantity / 40;
+        }
+
+        const stockDiv = document.createElement('div');
+        stockDiv.textContent = `Product: ${product}, Quantity: ${quantity}, Estimated Trucks: ${estimatedTrucks.toFixed(1)}`;
+        stocksDiv.appendChild(stockDiv);
+    }
+});
+
+// Function to close the Add Stock modal
+function closeAddStockModal() {
+    document.getElementById("addStockModal").style.display = "none";
+}
+
+// Function to show the Add Stock modal
+function showAddStockModal() {
+    document.getElementById("addStockModal").style.display = "flex";
+}
+
+// Function to close the "Add Work Form" modal
+function closemodl() {
+    document.getElementById("mymodl").style.display = "none";
+}
+
+// Function to close the "Insufficient Stock" modal
+function closeNoStockModal() {
+    document.getElementById("noStockModal").style.display = "none";
+}
+
+
+// Function to delete an order
+function deleteOrder(orderKey) {
+    if (confirm("Are you sure you want to delete this order?")) {
+        workDetailsRef.child(orderKey).remove()
+            .then(function() {
+                console.log("Order deleted successfully");
+            })
+            .catch(function(error) {
+                console.error("Error deleting order: ", error);
+            });
+    }
+}
+
+        // Logout user after 5 minutes of inactivity
+        let logoutTimer = null;
+        function resetLogoutTimer() {
+            if (logoutTimer) {
+                clearTimeout(logoutTimer);
+            }
+            logoutTimer = setTimeout(function() {
+                // TODO: Logout user
+                alert("You have been logged out due to inactivity.");
+                // You should replace the alert with actual logout code
+                // For example, if you're using Firebase:
+                // firebase.auth().signOut();
+            }, 5 * 60 * 1000); // 5 minutes
+        }
+        resetLogoutTimer();
+        document.addEventListener("mousemove", resetLogoutTimer);
+        document.addEventListener("keypress", resetLogoutTimer);
+        
+        // Handle "Logout" button click
+        document.getElementById("logout_button").addEventListener("click", function() {
+            firebase.auth().signOut().then(function() {
+                // No need to reset the logout timer here because the user is being logged out
+                window.location.href = "/login";
+            }).catch(function(error) {
+                alert("An error occurred while logging out.");
+            });
+        });
+    </script>
+
+
+    
+    <script>
+    document.getElementById('search').addEventListener('keyup', function() {
+    var search = this.value.toLowerCase();
+    var rows = document.querySelectorAll('#work_details_table_body tr');
+
+    for (var i = 0; i < rows.length; i++) {
+        var cells = rows[i].querySelectorAll('td');
+        var found = false;
+
+        for (var j = 0; j < cells.length; j++) {
+            // Get cell content, checking for input elements
+            var cellContent = cells[j].textContent.toLowerCase();
+            var inputElement = cells[j].querySelector("input");
+            if (inputElement) {
+                cellContent = inputElement.value.toLowerCase(); 
+            }
+            
+            if (cellContent.indexOf(search) > -1) {
+                found = true;
+                break;
+            }
+        }
+        rows[i].style.display = found ? "" : "none";
+    }
+});
+
+
+    </script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js"></script>
+
+<!-- jsPDF and html2canvas CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+async function populateForm(button) {
+    // Get the table row containing the clicked button
+    const row = button.closest('tr');
+    const cells = row.getElementsByTagName('td');
+
+    // Map table cell values to form fields
+    document.getElementById('code').value = cells[5].innerText; // Order Number
+    document.getElementById('licensePlate').value = cells[2].querySelector('input').value; // Get value from input field
+    document.getElementById('destination').value = cells[7].innerText; // Destination
+    document.getElementById('fuelType').value = cells[1].innerText; // Product
+    document.getElementById('totalLiters').value = cells[3].innerText; // Quantity
+
+    // Set default values for date, loading point, at20, pass number, name1, and name2
+    document.getElementById('date').value = new Date().toISOString().split('T')[0]; // Current date
+    document.getElementById('loadingPoint').value = cells[6].innerText; // Depot
+    document.getElementById('at20').value = 'Default At 20'; // Set as per your logic
+
+    // Set the pass number in the form field
+    let lastPassNumber = await getLastPassNumber();
+    document.getElementById('passNumber').value = `MOK-GP-${lastPassNumber + 1}`;
+
+    document.getElementById('name1').value = 'ZAINAB AHMED'; // Name 1
+    document.getElementById('name2').value = 'IBRAHIM MOHAMED ATHMAN'; // Name 2
+
+    // Display the modal
+    document.getElementById('gpModal').style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById('gpModal').style.display = "none";
+}
+
+// Close the modal if the user clicks anywhere outside of the modal
+window.onclick = function(event) {
+    const modal = document.getElementById('gpModal');
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+async function getLastPassNumber() {
+    const snapshot = await db.ref("gatePasses/lastPassNumber").once('value');
+    return snapshot.val() || 192; // Default to 192 if not found
+}
+
+async function incrementPassNumber() {
+    const lastNumber = await getLastPassNumber();
+    const newNumber = lastNumber + 1;
+    await db.ref("gatePasses/lastPassNumber").set(newNumber);
+    return newNumber;
+}
+
+async function generatePDF(button) {
+    const { jsPDF } = window.jspdf;
+    const form = document.getElementById('gatePassForm');
+
+    // Validate license plate format
+const licensePlateInput = document.getElementById('licensePlate');
+const licensePlateError = document.getElementById('licensePlateError');
+const licensePlateValue = licensePlateInput.value;
+
+if (licensePlateValue.includes('/')) {
+    licensePlateError.style.display = 'block';
+    licensePlateError.textContent = 'License Plate must use - instead of /.';
+    licensePlateInput.focus();
+    return;
+} else if (!licensePlateValue.match(/^[A-Z]+\d+[A-Z]*-\d*[A-Z]+\d+[A-Z]*$/)) {
+    licensePlateError.style.display = 'block';
+    licensePlateError.textContent = 'License Plate must be in the format ABC123-DEF456, T253DFQ-T889DFF, KDH185A-ZG1379, or SSD833P-SSD642AB.';
+    licensePlateInput.focus();
+    return;
+} else {
+    licensePlateError.style.display = 'none';
+}
+    // Check if the form is valid
+    if (!form.checkValidity()) {
+        form.reportValidity(); // This will highlight the invalid fields
+        return;
+    }
+
+    // Get form data
+    const formData = new FormData(form);
+    const truckNumber = formData.get('licensePlate');
+
+    // Check if truck number was used in the last 2 hours
+    const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
+    const ref = firebase.database().ref('gatePasses');
+    const snapshot = await ref.orderByChild('truckNumber').equalTo(truckNumber).limitToLast(1).once('value');
+    const lastGatePass = snapshot.val();
+    let isDuplicate = false;
+    let passNumber;
+    if (lastGatePass) {
+        const lastPassData = Object.values(lastGatePass)[0];
+        if (lastPassData.timestamp > twoHoursAgo) {
+            isDuplicate = true;
+            passNumber = lastPassData.passNumber;
+        } else {
+            passNumber = await incrementPassNumber();
+        }
+    } else {
+        passNumber = await incrementPassNumber();
+    }
+
+    // Define file names
+    const fileName = `gate-pass-${Date.now()}.pdf`;
+    const duplicateFileName = `gate-pass-${Date.now()}-duplicate.pdf`;
+
+    // Create a new PDF document
+    const doc = new jsPDF('landscape', 'pt', 'a4');
+
+    // Add background image
+    const backgroundImg = new Image();
+    backgroundImg.src = './public/image.png';
+
+    backgroundImg.onload = function() {
+        doc.addImage(backgroundImg, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
+
+        // Set font to bold 
+        doc.setFont('helvetica', 'bold');
+
+        // Add text on top of the background image
+        doc.setFontSize(14);
+        doc.setTextColor('#3D98DD');
+
+        doc.text(formData.get('code'), 125, 175);
+        doc.text(formData.get('date'), 425, 205);
+        doc.text(formData.get('licensePlate'), 440, 265);
+        doc.text(formData.get('destination'), 100, 250);
+        doc.text(formData.get('fuelType'), 120, 340);
+        doc.text(formData.get('totalLiters'), 400, 340);
+        doc.text(formData.get('liters1'), 700, 340);
+        doc.text(formData.get('liters2'), 700, 370);
+        doc.text(formData.get('liters3'), 700, 400);
+        doc.text(`MOK-GP-${passNumber}`, 700, 175);
+        doc.text(formData.get('name1'), 100, 535);
+        doc.text(formData.get('name2'), 660, 525);
+        doc.text(formData.get('loadingPoint'), 740, 265);
+        doc.text(formData.get('at20'), 500, 340);
+
+        if (isDuplicate) {
+            doc.text('DUPLICATE', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() / 2, { align: 'center' });
+        }
+
+        // Save the PDF
+        if (isDuplicate) {
+            doc.save(duplicateFileName);
+        } else {
+            doc.save(fileName);
+        }
+
+        // Replace the GP button with the passNumber link temporarily
+        const passNumberLink = document.createElement('a');
+        passNumberLink.href = `./${isDuplicate ? duplicateFileName : fileName}`;
+        passNumberLink.download = isDuplicate ? duplicateFileName : fileName;
+        passNumberLink.textContent = `MOK-GP-${passNumber}`;
+        passNumberLink.onclick = function(e) {
+            e.preventDefault();
+            const link = document.createElement('a');
+            link.href = `./${isDuplicate ? duplicateFileName : fileName}`;
+            link.download = isDuplicate ? duplicateFileName : fileName;
+            link.click();
+        };
+        button.parentNode.replaceChild(passNumberLink, button);
+
+        // Reset the button after a short delay
+        setTimeout(() => {
+            passNumberLink.parentNode.replaceChild(button, passNumberLink);
+            button.textContent = 'Generate Gate Pass';
+            button.disabled = false;
+        }, 2000); // Adjust delay as necessary
+    };
+
+    // Save gate pass data to Firebase only if it's not a duplicate
+    if (!isDuplicate) {
+        const gatePassData = Object.fromEntries(formData.entries());
+        gatePassData.timestamp = Date.now();
+        gatePassData.truckNumber = truckNumber;
+        gatePassData.passNumber = passNumber; // Save the passNumber to Firebase
+        firebase.database().ref(`gatePasses/${truckNumber}`).set(gatePassData);
+    }
+
+    // Close the modal after PDF generation
+    closeModal();
+}
+
+// unpaid review
+        function getUnpaidLoadedTrucks() {
+            const unpaidTrucks = [];
+
+            Object.keys(ownerSummary).forEach(owner => {
+                const ownerData = ownerSummary[owner];
+                
+                ownerData.loadedTrucks.forEach(truck => {
+                    if (!truck.paid) {
+                        unpaidTrucks.push({
+                            owner: owner,
+                            truckNumber: truck.truck_number,
+                            product: truck.product,
+                            price: truck.price,
+                            at20: truck.at20,
+                            amount: truck.price * truck.at20,
+                        });
+                    }
+                });
+            });
+
+            return unpaidTrucks;
+        }
+
+        function showUnpaidLoadedTrucks() {
+            const modal = document.getElementById("unpaidTrucksModal");
+            const modalContent = document.getElementById("unpaidTrucksModalContent");
+            const unpaidTrucks = getUnpaidLoadedTrucks();
+
+            const unpaidTrucksHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Owner</th>
+                            <th>Truck Number</th>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>At20</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${unpaidTrucks.map((truck, index) => {
+                            return `
+                                <tr>
+                                    <td>${truck.owner}</td>
+                                    <td>${truck.truckNumber}</td>
+                                    <td>${truck.product}</td>
+                                    <td>$${Number(truck.price).toFixed(2)}</td>
+                                    <td>${truck.at20}</td>
+                                    <td>$${truck.amount.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        }).join("")}
+                    </tbody>
+                </table>
+            `;
+
+            modalContent.innerHTML = `
+                <span class="close" onclick="closeUnpaidTrucksModal()">×</span>
+                <h3 class="text-lg font-semibold">Unpaid Loaded Trucks</h3>
+                ${unpaidTrucksHtml}
+            `;
+
+            modal.style.display = "flex";
+        }
+
+        function closeUnpaidTrucksModal() {
+            const modal = document.getElementById("unpaidTrucksModal");
+            modal.style.display = "none";
+        }
+
+        document.getElementById("unpaidPreviewButton").addEventListener("click", showUnpaidLoadedTrucks);
+    
+
+</script>
+</body>
+</html>
