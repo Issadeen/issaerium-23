@@ -46,7 +46,7 @@ interface DashboardCardProps {
 
 const DashboardCard = ({ icon: Icon, title, description, href }: DashboardCardProps) => (
   <a href={href} className="flex-1">
-    <Card className="flex-1 h-full bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300">
+    <Card className="flex-1 h-full bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 rounded-lg shadow-md">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gray-900/70 backdrop-blur-md supports-[backdrop-filter]:bg-gray-900/60">
         <CardTitle className="text-sm font-medium text-gray-200">{title}</CardTitle>
         <div className="rounded-full bg-blue-500/20 p-2">
@@ -184,14 +184,14 @@ export default function Dashboard() {
         </div>
       </header>
       <main className="container py-24 relative z-10 mx-auto px-4"> {/* Changed padding-top to 24 */}
-        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-blue-400 mb-8">
+        <h1 className="scroll-m-20 text-5xl font-extrabold tracking-tight lg:text-6xl text-blue-400 mb-8">
           {welcomeText}
         </h1>
-        <p className="text-xl text-gray-400 mb-8">Here you can manage your:</p>
-        <h2 className="scroll-m-20 border-b border-gray-800 pb-2 text-3xl font-semibold tracking-tight first:mt-0 mb-4 text-gray-200">
+        <p className="text-2xl text-gray-400 mb-8">Here you can manage your:</p>
+        <h2 className="scroll-m-20 border-b border-gray-800 pb-2 text-4xl font-semibold tracking-tight first:mt-0 mb-4 text-gray-200">
           Dashboard
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <DashboardCard icon={Truck} title="Truck Details" description="View and manage truck information." href="/truck-details" />
           <DashboardCard icon={Clipboard} title="Work Details" description="Track and review work assignments." href="/work-details" />
           <DashboardCard icon={PlusCircle} title="New Trucks" description="Add and register new trucks." href="/new-trucks" />
